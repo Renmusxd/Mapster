@@ -18,7 +18,8 @@ class BatchManager:
         for b in range(batch_size):
         	i = numpy.random.randint(1,m-pred_size-1)
         	j = numpy.random.randint(1,n-pred_size-1)
-        	xs.append(img[i:i+pred_size, j:j+pred_size])
+        	sample = img[i:i+pred_size, j:j+pred_size]
+        	xs.append(sample.reshape((datashape,)))
         	r = numpy.random.random()
         	if (r < 0.25):
         		ys.append(img[i-1, j:j+pred_size])
