@@ -1,9 +1,9 @@
 import tensorflow as tf
 
-class MapModel:
 
-    def __init__(self,input_layer,output_placeholder,
-                 input_size,shape,output_size,
+class MapModel:
+    def __init__(self, input_layer, output_placeholder,
+                 input_size, shape, output_size,
                  learning_rate=0.001):
         self.input_layer = input_layer
         self.shape = [input_size] + list(shape) + [output_size]
@@ -16,7 +16,7 @@ class MapModel:
         for s in list(self.shape):
             w = tf.Variable(tf.random_normal([last_size, s]))
             b = tf.Variable(tf.random_normal([s]))
-            layer = tf.nn.relu(tf.add(tf.matmul(layer,w),b))
+            layer = tf.nn.relu(tf.add(tf.matmul(layer, w), b))
 
             weights.append(w)
             biases.append(b)

@@ -15,7 +15,7 @@ x = tf.placeholder("float", [None, DAT_SHAPE])
 y = tf.placeholder("float", [None, PRED_SHAPE])
 
 data = BatchManager('some/data/path')
-model = MapModel(x,y,DAT_SHAPE,[256,256],PRED_SHAPE)
+model = MapModel(x, y, DAT_SHAPE, [256,256], PRED_SHAPE)
 
 init = tf.global_variables_initializer()
 with tf.Session() as sess:
