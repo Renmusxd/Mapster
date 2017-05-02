@@ -2,10 +2,10 @@ import tensorflow as tf
 
 class MapModel:
     def __init__(self,input_layer,output_placeholder,
-                 input_size,output_size,shape,
+                 input_size,shape,output_size,
                  learning_rate=0.001):
         self.input_layer = input_layer
-        self.shape = [input_size] + list(shape) + output_size
+        self.shape = [input_size] + list(shape) + [output_size]
 
         last_size = self.shape[0]
         weights = []
@@ -33,4 +33,4 @@ class MapModel:
         self.biases = biases
 
         self.cost = tf.reduce_mean(tf.squared_difference(self.out_layer, output_placeholder))
-        self.optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(cost)
+        self.optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(self.cost)
