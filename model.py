@@ -1,6 +1,7 @@
 import tensorflow as tf
 
 class MapModel:
+
     def __init__(self,input_layer,output_placeholder,
                  input_size,shape,output_size,
                  learning_rate=0.001):
@@ -34,3 +35,9 @@ class MapModel:
 
         self.cost = tf.reduce_mean(tf.squared_difference(self.out_layer, output_placeholder))
         self.optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(self.cost)
+
+    def make_single_model(self):
+        pass
+
+    def make_training_model(self):
+        pass
