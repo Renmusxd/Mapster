@@ -72,6 +72,7 @@ class MapModel:
         return ws, bs
 
     def export_diagnostics(self,sess,directory):
+        print("[*] Exporting Weights...")
         ws, bs = self.export_weights(sess)
         if not os.path.isdir(directory):
             os.mkdir(directory)
@@ -81,22 +82,27 @@ class MapModel:
         for i in range(ws[0].shape[1]):
             v = ws[0][:,i].reshape((sqrt_last_size,sqrt_last_size))
             ws_list.append((numpy.sum(numpy.abs(v)),v))
-        ws_major = [w[1] for w in sorted(ws_list,key=lambda x:x[0])]
+        ws_major = [w[1] for w in reversed(sorted(ws_list,key=lambda x:x[0]))]
 
+        print("\tGenerating figure...")
         fig, axes = pyplot.subplots(10,10)
         for i,ax in enumerate(axes.flatten()):
             im = ax.imshow(ws_major[i],vmin=-3,vmax=3)
         pyplot.colorbar(im,ax=axes.ravel().tolist())
+        print("\tSaving...")
         pyplot.savefig(os.path.join(directory,'topW.png'))
         pyplot.clf()
+        print("[+] Done!")
 
-    def make_map(self,sess,init,shape=(100,100)):
+
+    def make_map(self,sess,init,filename='outmap.png',shape=(100,100)):
         '''
         Make a map
         :param init: initial seed for map
         :param shape: how big of a map
         :return: A map!
         '''
+        print("[*] Making map...")
         map = numpy.zeros(shape)
         init[init<0] = 0
         init[init>1] = 1
@@ -118,8 +124,12 @@ class MapModel:
                     ys[ys > 1] = 1
                     map[0:self.cube_shape, col_pos+col_help+self.cube_shape] = numpy.flip(ys,0)
         # Now do 5 y changes
-        pyplot.imshow(map)
-        pyplot.show()
+        print("\tSaving figure...")
+        pyplot.imshow(map,cmap='gray')
+        pyplot.savefig(filename)
+        pyplot.clf()
+        print("[+] Done!")
+
 
 
 
