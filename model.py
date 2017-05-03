@@ -80,16 +80,18 @@ class MapModel:
                 #TODO: Deal with magic numbers
                 xs = [numpy.rot90(map[row_pos:row_pos + self.cube_shape, col_pos:col_pos + self.cube_shape],2)
                           .reshape((self.cube_shape*self.cube_shape,))]
-                ys = self.predict(sess,xs)
+                ys = self.predict(sess,xs)[0]
                 ys[ys<0] = 0
                 ys[ys>1] = 1
-                map[row_pos + self.cube_shape,col_pos:col_pos + self.cube_shape] = ys[0]
+                map[row_pos + self.cube_shape,col_pos:col_pos + self.cube_shape] = ys
             if col_pos < shape[1]-init.shape[1]:
                 for col_help in range(self.cube_shape):
                     xs = [numpy.rot90(map[0:self.cube_shape, col_pos+col_help:col_pos+col_help + self.cube_shape], 3)
                               .reshape((self.cube_shape*self.cube_shape,))]
-                    ys = self.predict(sess, xs)
-                    map[0:self.cube_shape, col_pos+col_help+self.cube_shape] = ys[0]
+                    ys = self.predict(sess, xs)[0]
+                    ys[ys < 0] = 0
+                    ys[ys > 1] = 1
+                    map[0:self.cube_shape, col_pos+col_help+self.cube_shape] = ys
         # Now do 5 y changes
         print(map)
         map[map>1] = 1
