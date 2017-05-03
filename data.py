@@ -7,8 +7,6 @@ class BatchManager:
     def __init__(self,datapath):
         # load in image as array
         self.img = scipy.ndimage.imread(datapath, True)/255.0
-        self.img[self.img>0.8] = 1
-        self.img[self.img<0.8] = 0
 
     def next_batch(self,pred_size=10,batch_size=64):
         m,n = numpy.shape(self.img)
