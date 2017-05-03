@@ -18,20 +18,10 @@ class BatchManager:
         for b in range(batch_size):
             i = numpy.random.randint(1,m-pred_size-1)
             j = numpy.random.randint(1,n-pred_size-1)
-            r = numpy.random.random()
 
             context = self.img[i-1:i+pred_size+1, j-1:j+pred_size+1]
-            if r < 0.25:
-                pass
-            elif 0.25 <= r < 0.5:
-                # rotate twice
-                context = numpy.rot90(context,2)
-            elif 0.5 <= r < 0.75:
-                # rotate thrice
-                context = numpy.rot90(context,3)
-            else:
-                # rotate once
-                context = numpy.rot90(context, 1)
+            context = numpy.rot90(context,numpy.random.randint(0,4))
+
             subimg = context[1:-1, 1:-1]  # NxN subimage for x vector
             ysample = context[0,1:-1]  # Top line for y vector
             xsample = subimg.reshape((pred_size*pred_size,))
