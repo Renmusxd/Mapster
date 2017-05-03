@@ -70,7 +70,8 @@ class MapModel:
         '''
         map = numpy.zeros(shape)
         map[:init.shape[0],:init.shape[1]] = init
-
+        pyplot.imshow(init)
+        pyplot.show()
         for col_pos in range(0,shape[1],10):
             print("Colp:",col_pos)
             for row_pos in range(shape[0]-init.shape[0]):
@@ -81,18 +82,20 @@ class MapModel:
                 map[row_pos + 10,col_pos:col_pos + 10] = ys[0]
             if col_pos < shape[1]-init.shape[1]:
                 for col_help in range(10):
-                    print("Colh:",col_help)
                     xs = [numpy.rot90(
                                 map[row_pos:row_pos + 10,
                                     col_pos+col_help:col_pos+col_help + 10],
                                 3).reshape((100,))]
                     ys = self.predict(sess, xs)
+                    print(ys[0])
                     map[row_pos:row_pos + 10, col_pos+col_help] = ys[0]
         # Now do 5 y changes
+        print(map)
+        map = numpy.minimum(0, numpy.maximum(1, map))
         pyplot.imshow(map)
         pyplot.show()
 
-        map = numpy.minimum(0,numpy.maximum(1,map))
+
 
 
 

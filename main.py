@@ -23,4 +23,4 @@ init = tf.global_variables_initializer()
 with tf.Session() as sess:
     sess.run(init)
     model.train(sess,data,training_epochs,total_batch)
-    model.make_map(sess,data.next_batch(batch_size=1)[0])
+    model.make_map(sess,data.next_batch(batch_size=1)[0].reshape((10,10)))
