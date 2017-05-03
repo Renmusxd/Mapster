@@ -38,7 +38,10 @@ class MapModel:
 
         self.cost = tf.reduce_mean(tf.squared_difference(self.out_layer, output_placeholder))
         #self.optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(self.cost)
-        self.optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate).minimize(self.cost)
+        self.optimizer = tf.train.RMSPropOptimizer(
+            learning_rate=learning_rate,
+            centered=True,
+            momentum=0.001).minimize(self.cost)
 
     def train(self,sess,batch_maker,training_epochs,total_batch):
         init = tf.global_variables_initializer()
@@ -83,7 +86,7 @@ class MapModel:
                 ys = self.predict(sess,xs)[0]
                 ys[ys<0] = 0
                 ys[ys>1] = 1
-                map[row_pos + self.cube_shape,col_pos:col_pos + self.cube_shape] = numpy.flip(ys)
+                map[row_pos + self.cube_shape,col_pos:col_pos + self.cube_shape] = ys
             if col_pos < shape[1]-init.shape[1]:
                 for col_help in range(self.cube_shape):
                     xs = [numpy.rot90(map[0:self.cube_shape, col_pos+col_help:col_pos+col_help + self.cube_shape], 1)
@@ -91,7 +94,7 @@ class MapModel:
                     ys = self.predict(sess, xs)[0]
                     ys[ys < 0] = 0
                     ys[ys > 1] = 1
-                    map[0:self.cube_shape, col_pos+col_help+self.cube_shape] = ys
+                    map[0:self.cube_shape, col_pos+col_help+self.cube_shape] = numpy.flip(ys,0)
         # Now do 5 y changes
         pyplot.imshow(map)
         pyplot.show()

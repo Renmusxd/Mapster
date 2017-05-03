@@ -22,29 +22,19 @@ class BatchManager:
 
             context = self.img[i-1:i+pred_size+1, j-1:j+pred_size+1]
             if r < 0.25:
-                dir = 'top'
+                pass
             elif 0.25 <= r < 0.5:
                 # rotate twice
-                dir = 'bot'
                 context = numpy.rot90(context,2)
             elif 0.5 <= r < 0.75:
                 # rotate thrice
-                dir = 'left'
                 context = numpy.rot90(context,3)
             else:
                 # rotate once
-                dir = 'right'
                 context = numpy.rot90(context, 1)
             subimg = context[1:-1, 1:-1]  # NxN subimage for x vector
             ysample = context[0,1:-1]  # Top line for y vector
             xsample = subimg.reshape((pred_size*pred_size,))
-
-            # fig, (ax1,ax2,ax3) = pyplot.subplots(1,3)
-            # fig.suptitle(dir)
-            # im1 = ax1.imshow(context,cmap='gray')
-            # ax2.imshow(subimg,cmap='gray',clim=im1.properties()['clim'])
-            # ax3.imshow([ysample],cmap='gray',clim=im1.properties()['clim'])
-            # pyplot.show()
 
             xs.append(xsample)
             ys.append(ysample)
