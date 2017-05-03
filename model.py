@@ -37,7 +37,8 @@ class MapModel:
         self.biases = biases
 
         self.cost = tf.reduce_mean(tf.squared_difference(self.out_layer, output_placeholder))
-        self.optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(self.cost)
+        #self.optimizer = tf.train.AdamOptimizer(learning_rate=learning_rate).minimize(self.cost)
+        self.optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate).minimize(self.cost)
 
     def train(self,sess,batch_maker,training_epochs,total_batch):
         init = tf.global_variables_initializer()
@@ -45,7 +46,7 @@ class MapModel:
         for epoch in range(training_epochs):
             avg_cost = 0.
             for i in range(total_batch):
-                batch_x, batch_y = batch_maker.next_batch()
+                batch_x, batch_y = batch_maker.next_batch(pred_size=self.cube_shape)
                 _, c = sess.run([self.optimizer, self.cost],
                                 feed_dict={self.input_placeholder: batch_x,
                                            self.output_placeholder: batch_y})
@@ -70,33 +71,28 @@ class MapModel:
         :return: A map!
         '''
         map = numpy.zeros(shape)
+        init[init<0] = 0
+        init[init>1] = 1
         map[:init.shape[0],:init.shape[1]] = init
-        pyplot.imshow(init)
-        pyplot.show()
         for col_pos in range(0,shape[1],self.cube_shape):
             print("Colp:",col_pos)
             for row_pos in range(shape[0]-init.shape[0]):
                 print("Rowp",row_pos)
-                #TODO: Deal with magic numbers
                 xs = [numpy.rot90(map[row_pos:row_pos + self.cube_shape, col_pos:col_pos + self.cube_shape],2)
                           .reshape((self.cube_shape*self.cube_shape,))]
                 ys = self.predict(sess,xs)[0]
                 ys[ys<0] = 0
                 ys[ys>1] = 1
-                map[row_pos + self.cube_shape,col_pos:col_pos + self.cube_shape] = ys
+                map[row_pos + self.cube_shape,col_pos:col_pos + self.cube_shape] = numpy.flip(ys)
             if col_pos < shape[1]-init.shape[1]:
                 for col_help in range(self.cube_shape):
-                    xs = [numpy.rot90(map[0:self.cube_shape, col_pos+col_help:col_pos+col_help + self.cube_shape], 3)
+                    xs = [numpy.rot90(map[0:self.cube_shape, col_pos+col_help:col_pos+col_help + self.cube_shape], 1)
                               .reshape((self.cube_shape*self.cube_shape,))]
                     ys = self.predict(sess, xs)[0]
                     ys[ys < 0] = 0
                     ys[ys > 1] = 1
                     map[0:self.cube_shape, col_pos+col_help+self.cube_shape] = ys
         # Now do 5 y changes
-        print(map)
-        map[map>1] = 1
-        map[map<0] = 0
-        print(map)
         pyplot.imshow(map)
         pyplot.show()
 

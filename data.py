@@ -1,16 +1,17 @@
 import numpy
 import scipy.ndimage
+from matplotlib import pyplot
+
 
 class BatchManager:
     def __init__(self,datapath):
         # load in image as array
         self.img = scipy.ndimage.imread(datapath, True)/255.0
+        self.img[self.img>0.8] = 1
+        self.img[self.img<0.8] = 0
 
-    def next_batch(self,data_shape=100,pred_size=10,batch_size=64):
-        img = self.img
-
-        m,n = numpy.shape(img)
-
+    def next_batch(self,pred_size=10,batch_size=64):
+        m,n = numpy.shape(self.img)
         xs = []  # list of length batch_size containing samples of size data_shape
         ys = []  # list of length batch_size containing samples of size batch_size
 
@@ -18,38 +19,38 @@ class BatchManager:
             i = numpy.random.randint(1,m-pred_size-1)
             j = numpy.random.randint(1,n-pred_size-1)
             r = numpy.random.random()
-            if (r < 0.25):
-                sample = img[i:i+pred_size, j:j+pred_size]
-                xs.append(sample.reshape((data_shape,)))
 
-                ysample = img[i-1, j:j+pred_size]
-                ys.append(ysample)
-            elif (0.25 <= r and r < 0.5):
+            context = self.img[i-1:i+pred_size+1, j-1:j+pred_size+1]
+            if r < 0.25:
+                dir = 'top'
+            elif 0.25 <= r < 0.5:
                 # rotate twice
-                sample = img[i:i+pred_size, j:j+pred_size]
-                sample = numpy.rot90(sample, 2)
-                xs.append(sample.reshape((data_shape,)))
-
-                ysample = img[i+pred_size, j:j+pred_size]
-                ys.append(ysample)
-            elif (0.5 <= r and r < 0.75):
-                # rotate once
-                sample = img[i:i+pred_size, j:j+pred_size]
-                sample = numpy.rot90(sample, 1)
-                xs.append(sample.reshape((data_shape,)))
-
-                ysample = img[i:i+pred_size, j-1]
-                ys.append(ysample)
+                dir = 'bot'
+                context = numpy.rot90(context,2)
+            elif 0.5 <= r < 0.75:
+                # rotate thrice
+                dir = 'left'
+                context = numpy.rot90(context,3)
             else:
-                # rotate three times
-                sample = img[i:i+pred_size, j:j+pred_size]
-                sample = numpy.rot90(sample, 3)
-                xs.append(sample.reshape((data_shape,)))
+                # rotate once
+                dir = 'right'
+                context = numpy.rot90(context, 1)
+            subimg = context[1:-1, 1:-1]  # NxN subimage for x vector
+            ysample = context[0,1:-1]  # Top line for y vector
+            xsample = subimg.reshape((pred_size*pred_size,))
 
-                ysample = img[i:i+pred_size, j+pred_size]
-                ys.append(ysample)
+            # fig, (ax1,ax2,ax3) = pyplot.subplots(1,3)
+            # fig.suptitle(dir)
+            # im1 = ax1.imshow(context,cmap='gray')
+            # ax2.imshow(subimg,cmap='gray',clim=im1.properties()['clim'])
+            # ax3.imshow([ysample],cmap='gray',clim=im1.properties()['clim'])
+            # pyplot.show()
+
+            xs.append(xsample)
+            ys.append(ysample)
         return numpy.array(xs), numpy.array(ys)
 
 if __name__ == "__main__":
-    b = BatchManager(None)
-    b.next_batch()
+    import sys
+    b = BatchManager("image/map2.jpg")
+    b.next_batch(batch_size=int(sys.argv[1]))
