@@ -4,11 +4,12 @@ from matplotlib import pyplot
 
 class MapModel:
     def __init__(self, input_layer, output_placeholder,
-                 input_size, shape, output_size,
+                 shape, cube_shape=10,
                  learning_rate=0.001):
         self.input_placeholder = input_layer
         self.output_placeholder = output_placeholder
-        self.shape = [input_size] + list(shape) + [output_size]
+        self.shape = [cube_shape*cube_shape] + list(shape) + [cube_shape]
+        self.cube_shape = cube_shape
 
         last_size = self.shape[0]
         weights = []
@@ -72,26 +73,28 @@ class MapModel:
         map[:init.shape[0],:init.shape[1]] = init
         pyplot.imshow(init)
         pyplot.show()
-        for col_pos in range(0,shape[1],10):
+        for col_pos in range(0,shape[1],self.cube_shape):
             print("Colp:",col_pos)
             for row_pos in range(shape[0]-init.shape[0]):
                 print("Rowp",row_pos)
                 #TODO: Deal with magic numbers
-                xs = [numpy.rot90(map[row_pos:row_pos + 10, col_pos:col_pos + 10],2).reshape((100,))]
+                xs = [numpy.rot90(map[row_pos:row_pos + self.cube_shape, col_pos:col_pos + self.cube_shape],2)
+                          .reshape((self.cube_shape*self.cube_shape,))]
                 ys = self.predict(sess,xs)
-                map[row_pos + 10,col_pos:col_pos + 10] = ys[0]
+                ys[ys<0] = 0
+                ys[ys>1] = 1
+                map[row_pos + self.cube_shape,col_pos:col_pos + self.cube_shape] = ys[0]
             if col_pos < shape[1]-init.shape[1]:
-                for col_help in range(10):
-                    xs = [numpy.rot90(
-                                map[row_pos:row_pos + 10,
-                                    col_pos+col_help:col_pos+col_help + 10],
-                                3).reshape((100,))]
+                for col_help in range(self.cube_shape):
+                    xs = [numpy.rot90(map[0:self.cube_shape, col_pos+col_help:col_pos+col_help + self.cube_shape], 3)
+                              .reshape((self.cube_shape*self.cube_shape,))]
                     ys = self.predict(sess, xs)
-                    print(ys[0])
-                    map[row_pos:row_pos + 10, col_pos+col_help] = ys[0]
+                    map[0:self.cube_shape, col_pos+col_help+self.cube_shape] = ys[0]
         # Now do 5 y changes
         print(map)
-        map = numpy.minimum(0, numpy.maximum(1, map))
+        map[map>1] = 1
+        map[map<0] = 0
+        print(map)
         pyplot.imshow(map)
         pyplot.show()
 
