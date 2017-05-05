@@ -32,7 +32,7 @@ if __name__ == "__main__":
     with tf.Session() as sess:
         sess.run(init)
         model.train(sess, data, training_epochs, total_batch)
-        model.export_diagnostics(sess, "diag")
+        #model.export_diagnostics(sess, "diag")
 
         init = data.make_batch(batch_size=1)[0]\
                    .reshape(X_SHAPE)

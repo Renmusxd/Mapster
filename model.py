@@ -116,39 +116,57 @@ class MapModel:
         init[init<0] = 0
         init[init>1] = 1
         map[:init.shape[0],:init.shape[1]] = init
+        print(init.shape,self.cube_shape)
+        # Complete init square (init section should be square-like)
+        for row_pos in range(0,self.pred_shape[1]-self.cube_shape[0],self.pred_shape[0]):
+            xs = [numpy.rot90(
+                    map[row_pos:row_pos+self.cube_shape[0],
+                        :self.cube_shape[1]],
+                    2).reshape((numpy.prod(self.cube_shape),))
+                  ]
+            ys = self.predict(sess,xs)[0].reshape(self.pred_shape)
+            ys[ys < 0] = 0
+            ys[ys > 1] = 1
+
+            map[
+                row_pos+self.cube_shape[0] : row_pos+self.cube_shape[0]+self.pred_shape[0],
+                : self.pred_shape[1]
+            ] = numpy.rot90(ys,-2)
+        # Now we have a self.pred_shape[1] by self.pred_shape[1] square in the top left
+
         # Move forward by width of prediction
         for col_pos in range(0,shape[1],self.pred_shape[1]):
-            for row_pos in range(shape[0]-init.shape[0]):
+            # Fill out the prediction column
+            for row_pos in range(self.pred_shape[1]-self.cube_shape[0],shape[0]-init.shape[0]):
                 xs = [numpy.rot90(
                         map[row_pos:row_pos + self.cube_shape[0],
                             col_pos:col_pos + self.cube_shape[1]],
-                        2).reshape(
-                            (numpy.prod(self.cube_shape),)
-                        )]
+                        2).reshape((numpy.prod(self.cube_shape),))
+                      ]
                 ys = self.predict(sess,xs)[0]
 
-                ys = ys * 0 + row_pos * 1.0/shape[0] + col_pos * 1.0/shape[1]
+                # ys = ys * 0 + row_pos * 1.0/shape[0] + col_pos * 1.0/shape[1]
                 ys[ys<0] = 0
                 ys[ys>1] = 1
                 map[row_pos + self.cube_shape[0]:row_pos + self.cube_shape[0] + self.pred_shape[0],
                     col_pos:col_pos + self.pred_shape[1]] = numpy.rot90(ys,-2)
+            # Make the next self.pred_shape[1] x self.pred_shape[1] square
             if col_pos < shape[1]-init.shape[1]:
                 for col_help in range(self.pred_shape[1]):
                     xs = [numpy.rot90(
                             map[0:self.cube_shape[1],
                                 col_pos+col_help:col_pos+col_help + self.cube_shape[0]],
-                            1).reshape(
-                                (numpy.prod(self.cube_shape),)
-                            )]
+                            1).reshape((numpy.prod(self.cube_shape),))
+                          ]
                     ys = self.predict(sess, xs)[0].reshape(self.pred_shape)
 
-                    ys = ys * 0 + col_help / self.pred_shape[1]
+                    # ys = ys * 0 + col_help / self.pred_shape[1]
                     ys[ys < 0] = 0
                     ys[ys > 1] = 1
                     map[0:self.pred_shape[1],
-                        col_pos+self.cube_shape[0]+col_help:
-                            col_pos+self.cube_shape[0]+col_help+self.pred_shape[0]] = numpy.rot90(ys,-1)
-        # Now do 5 y changes
+                        col_pos+self.cube_shape[1]+col_help:
+                            col_pos+self.cube_shape[1]+col_help+self.pred_shape[0]] = numpy.rot90(ys,-1)
+
         print("\tSaving figure...")
         pyplot.imshow(map,cmap='gray')
         pyplot.savefig(filename)
