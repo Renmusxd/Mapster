@@ -1,29 +1,39 @@
 import tensorflow as tf
+import numpy
 from model import MapModel
 from data import BatchManager
+import sys
 
-
-PRED_SHAPE = 20
+X_SHAPE = (4,20)
+Y_SHAPE = (1,20)
 
 learning_rate = 0.001
 training_epochs = 50
-batch_size = 100
-display_step = 1
+batch_size = 64
 total_batch = 1000
 
-x = tf.placeholder("float", [None, PRED_SHAPE*PRED_SHAPE])
-y = tf.placeholder("float", [None, PRED_SHAPE])
+if __name__ == "__main__":
+    if len(sys.argv) > 1:
+        training_epochs = int(sys.argv[1])
+    if len(sys.argv) > 2:
+        PRED_SHAPE = int(sys.argv[2])
+    if len(sys.argv) > 3:
+        batch_size = int(sys.argv[3])
 
-data = BatchManager('image/map2.jpg')
-model = MapModel(x, y, [1024,512], cube_shape=PRED_SHAPE)
+    x = tf.placeholder("float", [None, numpy.prod(X_SHAPE)])
+    y = tf.placeholder("float", [None, numpy.prod(Y_SHAPE)])
 
+    data = BatchManager('image/map2.jpg',x_shape=X_SHAPE,y_shape=Y_SHAPE,pregen=10000)
+    model = MapModel(x, y, [1024,512],
+                     cube_shape=X_SHAPE,
+                     pred_shape=Y_SHAPE)
 
-init = tf.global_variables_initializer()
-with tf.Session() as sess:
-    sess.run(init)
-    model.train(sess, data, training_epochs, total_batch)
-    model.export_diagnostics(sess, "diag")
+    init = tf.global_variables_initializer()
+    with tf.Session() as sess:
+        sess.run(init)
+        model.train(sess, data, training_epochs, total_batch)
+        model.export_diagnostics(sess, "diag")
 
-    init = data.next_batch(pred_size=PRED_SHAPE,batch_size=1)[0]\
-               .reshape((PRED_SHAPE,PRED_SHAPE))
-    model.make_map(sess, init)
+        init = data.make_batch(batch_size=1)[0]\
+                   .reshape(X_SHAPE)
+        model.make_map(sess, init)
