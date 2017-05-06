@@ -4,13 +4,13 @@ import os
 from matplotlib import pyplot
 
 class MapModel:
-    def __init__(self, input_layer, output_placeholder,
+    def __init__(self, input_placeholder, output_placeholder,
                  shape, cube_shape=(10,10), pred_shape=(1,10),
                  learning_rate=0.001):
         self.shape = list(shape)
         self.cube_shape = cube_shape
         self.pred_shape = pred_shape
-        self.input_placeholder = input_layer
+        self.input_placeholder = input_placeholder
         self.output_placeholder = output_placeholder
         self.keep_prop = tf.placeholder(tf.float32,name='keep_prop')
 
@@ -52,7 +52,9 @@ class MapModel:
             centered=True,
             momentum=0.1).minimize(self.cost)
 
-    def train(self,sess,batch_maker,training_epochs,total_batch):
+    def train(self,sess,batch_maker,training_epochs,total_batch,epoch_offset=0,total_epochs=None):
+        if total_epochs is None:
+            total_epochs = training_epochs
         for epoch in range(training_epochs):
             avg_cost = 0.
             for i in range(total_batch):
@@ -62,7 +64,7 @@ class MapModel:
                                            self.output_placeholder: batch_y,
                                            self.keep_prop: 1.0})
                 avg_cost += c / total_batch
-            print("Epoch: {}/{}\tcost: {:.9f}".format(epoch, training_epochs, avg_cost))
+            print("Epoch: {}/{}\tcost: {:.9f}".format(epoch_offset+epoch, total_epochs, avg_cost))
 
     def predict(self,sess,xs):
         y = sess.run([self.out_layer], feed_dict={self.input_placeholder: xs,

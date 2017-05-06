@@ -22,18 +22,30 @@ class BatchManager:
             self.xs, self.ys = self.make_batch(batch_size=pregen)
             self.next_batch = self.get_batch
         else:
+            self.xs, self.ys = None, None
             self.next_batch = self.make_batch
 
     def get_batch(self,batch_size=64):
         rs = numpy.random.randint(0,len(self.xs),(batch_size,))
         return self.xs[rs], self.ys[rs]
 
+    def get_data(self,size=None):
+        if size is None and self.xs is None:
+            raise Exception("Need pregen or defined size")
+        elif size is None and self.xs is not None:
+            size = self.xs.shape[0]
+        elif size is not None and self.xs is None:
+            self.xs, self.ys = self.make_batch(size)
+        elif size > self.xs.shape[0]:
+            new_xs, new_ys = self.make_batch(size - self.xs.shape[0])
+            self.xs = numpy.concatenate((self.xs,new_xs))
+            self.ys = numpy.concatenate((self.ys,new_ys))
+        return self.xs[:size], self.ys[:size]
+
     def make_batch(self,batch_size=64):
         m,n = numpy.shape(self.img)
         xs = []  # list of length batch_size containing samples of size data_shape
         ys = []  # list of length batch_size containing samples of size batch_size
-
-
 
         for b in range(batch_size):
             # Up-Down or Left-Right
