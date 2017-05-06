@@ -12,26 +12,27 @@ class MapModel:
         self.pred_shape = pred_shape
         self.input_placeholder = input_layer
         self.output_placeholder = output_placeholder
-        self.keep_prop = tf.placeholder(tf.float32)
+        self.keep_prop = tf.placeholder(tf.float32,name='keep_prop')
 
         last_size = numpy.prod(self.cube_shape)
         weights = []
         biases = []
         layers = []
         layer = self.input_placeholder
-        for s in list(self.shape):
-            w = tf.Variable(tf.random_normal([last_size, s]))
-            b = tf.Variable(tf.random_normal([s]))
+        for i,s in enumerate(list(self.shape)):
+            w = tf.Variable(tf.random_normal([last_size, s]),name="w_{}".format(i))
+            b = tf.Variable(tf.random_normal([s]),name="b_{}".format(i))
             layer = tf.nn.relu(
-                tf.matmul(layer, w) + b
+                tf.matmul(layer, w) + b,
+                name="relu_{}".format(i)
             )
             layer = tf.nn.dropout(layer,self.keep_prop)
             weights.append(w)
             biases.append(b)
             layers.append(layer)
             last_size = s
-        w = tf.Variable(tf.random_normal([last_size, numpy.prod(self.pred_shape)]))
-        b = tf.Variable(tf.random_normal([numpy.prod(self.pred_shape)]))
+        w = tf.Variable(tf.random_normal([last_size, numpy.prod(self.pred_shape)]),name="w_out")
+        b = tf.Variable(tf.random_normal([numpy.prod(self.pred_shape)]),name="b_out")
         out_layer = tf.matmul(layer, w) + b
 
         weights.append(w)
@@ -52,8 +53,6 @@ class MapModel:
             momentum=0.1).minimize(self.cost)
 
     def train(self,sess,batch_maker,training_epochs,total_batch):
-        init = tf.global_variables_initializer()
-        sess.run(init)
         for epoch in range(training_epochs):
             avg_cost = 0.
             for i in range(total_batch):
