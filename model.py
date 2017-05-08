@@ -144,8 +144,7 @@ class MapModel:
                             col_pos:col_pos + self.cube_shape[1]],
                         2).reshape((numpy.prod(self.cube_shape),))
                       ]
-                ys = self.predict(sess,xs)[0]
-
+                ys = self.predict(sess,xs)[0].reshape(self.pred_shape)
                 # ys = ys * 0 + row_pos * 1.0/shape[0] + col_pos * 1.0/shape[1]
                 ys[ys<0] = 0
                 ys[ys>1] = 1

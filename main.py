@@ -5,8 +5,8 @@ from data import BatchManager
 import sys
 import os
 
-X_SHAPE = (3,10)
-Y_SHAPE = (1,10)
+X_SHAPE = (5,10)
+Y_SHAPE = (2,10)
 
 learning_rate = 0.001
 training_epochs = 50
