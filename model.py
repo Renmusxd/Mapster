@@ -129,10 +129,17 @@ class MapModel:
             ys[ys < 0] = 0
             ys[ys > 1] = 1
 
-            map[
-                row_pos+self.cube_shape[0] : row_pos+self.cube_shape[0]+self.pred_shape[0],
-                : self.pred_shape[1]
-            ] = numpy.rot90(ys,-2)
+
+            lowcol = row_pos+self.cube_shape[0]
+            highcol = row_pos+self.cube_shape[0]+self.pred_shape[0]
+            lowrow = 0
+            highrow = self.pred_shape[1]
+
+            ycolmax = map.shape[0] - lowcol
+            yrowmax = map.shape[1] - lowrow
+
+            map[lowcol:highcol, lowrow:highrow] = numpy.rot90(ys,-2)[:ycolmax,:yrowmax]
+
         # Now we have a self.pred_shape[1] by self.pred_shape[1] square in the top left
 
         # Move forward by width of prediction
@@ -148,8 +155,16 @@ class MapModel:
                 # ys = ys * 0 + row_pos * 1.0/shape[0] + col_pos * 1.0/shape[1]
                 ys[ys<0] = 0
                 ys[ys>1] = 1
-                map[row_pos + self.cube_shape[0]:row_pos + self.cube_shape[0] + self.pred_shape[0],
-                    col_pos:col_pos + self.pred_shape[1]] = numpy.rot90(ys,-2)
+
+                lowcol = row_pos + self.cube_shape[0]
+                highcol = row_pos + self.cube_shape[0] + self.pred_shape[0]
+                lowrow = col_pos
+                highrow = col_pos + self.pred_shape[1]
+
+                ycolmax = map.shape[0] - lowcol
+                yrowmax = map.shape[1] - lowrow
+
+                map[lowcol:highcol, lowrow:highrow] = numpy.rot90(ys,-2)[:ycolmax,:yrowmax]
             # Make the next self.pred_shape[1] x self.pred_shape[1] square
             if col_pos < shape[1]-init.shape[1]:
                 for col_help in range(self.pred_shape[1]):
@@ -163,9 +178,16 @@ class MapModel:
                     # ys = ys * 0 + col_help / self.pred_shape[1]
                     ys[ys < 0] = 0
                     ys[ys > 1] = 1
-                    map[0:self.pred_shape[1],
-                        col_pos+self.cube_shape[1]+col_help:
-                            col_pos+self.cube_shape[1]+col_help+self.pred_shape[0]] = numpy.rot90(ys,-1)
+
+                    lowcol = 0
+                    highcol = self.pred_shape[1]
+                    lowrow = col_pos+self.cube_shape[1]+col_help
+                    highrow = col_pos+self.cube_shape[1]+col_help+self.pred_shape[0]
+
+                    ycolmax = map.shape[0] - lowcol
+                    yrowmax = map.shape[1] - lowrow
+
+                    map[lowcol:highcol,lowrow:highrow] = numpy.rot90(ys,-1)[:ycolmax,:yrowmax]
 
         print("\tSaving figure...")
         pyplot.imshow(map,cmap='gray')

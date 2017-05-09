@@ -44,7 +44,7 @@ if __name__ == "__main__":
                 .reshape(X_SHAPE)
             for i in range(0,training_epochs,out_each):
                 model.make_map(sess, init, filename="output/map_{}.png".format(i))
-                model.train(sess, data, out_each, total_batch,
+                model.train(sess, data, min(out_each,training_epochs-i), total_batch,
                             epoch_offset=i,total_epochs=training_epochs)
                 print("[*] Saving model....")
                 saver.save(sess,'checkpoints/model.ckpt')
